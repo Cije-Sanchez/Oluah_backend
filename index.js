@@ -112,6 +112,11 @@ app.get("/ping", function (req, res) {
   res.send("Yo Whatsapp");
 });
 
+app.post("/show_body", function (req, res) {
+  console.log("Get Request Received");
+  res.send(req.body);
+});
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
