@@ -2,7 +2,23 @@ const express = require("express");
 const app = express();
 const port = process.env.PORT || 3000;
 const cors = require("cors");
-app.use(express.text());
+app.use((req, res, next) => {
+  let rawBody = "";
+
+  req.on("data", (chunk) => {
+    rawBody += chunk;
+  });
+
+  req.on("end", () => {
+    req.rawBody = rawBody; // Attach raw body to the request object
+    next();
+  });
+
+  req.on("error", (err) => {
+    console.error("Error reading raw body:", err);
+    res.status(500).send("Error reading body");
+  });
+});
 
 app.use(cors());
 const { Pool } = require("pg");
@@ -14,58 +30,6 @@ const pool = new Pool({
   password: process.env.PG_PASSWORD,
   port: process.env.PG_PORT,
 });
-
-/*Incase you want to use a vector database*/
-// async function Vectorizer() {
-//   try {
-//     await pool.query(
-//       `
-//       SELECT ai.create_vectorizer(
-//       'public.imdb_numbered_votes'::regclass,
-//       embedding=>ai.embedding_openai('text-embedding-3-small', 1536, api_key_name=>'OPENAI_API_KEY'),
-//       chunking=>ai.chunking_recursive_character_text_splitter('description'),
-//       formatting=>ai.formatting_python_template('title: $title description: $chunk, year: $year, duration: $duration, rating: $rating, stars: $stars')
-//       );
-//       `,
-//     );
-//     return { status: "success" };
-//   } catch (error) {
-//     console.log(error);
-//     return { status: "failed" };
-//   }
-// }
-
-/*Also incase you want to use a vector database*/
-// async function EmbedQuery(query) {
-//   try {
-//     // Step 1: Get the embedding for the query
-//     const embeddingResult = await pool.query(
-//       `SELECT ai.openai_embed('text-embedding-3-small', $1) AS embedding`,
-//       [query],
-//     );
-//
-//     const embedding = embeddingResult.rows[0].embedding;
-//
-//     // Step 2: Use the embedding in the main query
-//     const result = await pool.query(
-//       `
-//     SELECT chunk
-//     FROM imdb_numbered_votes_embedding_store
-//     ORDER BY embedding <=> $1
-//     LIMIT 3;
-//     `,
-//       [embedding],
-//     );
-//
-//     const rows = result.rows;
-//     const context = rows.map((value) => `Chunk: ${value.chunk}`).join("\n\n");
-//
-//     return { status: "success", chunk: context };
-//   } catch (error) {
-//     console.log(error);
-//     return { status: "failed" };
-//   }
-// }
 
 const system_prompt = `
 You are a Computer Science Textbook Recommendation Assistant. Your job is to recommend 1-3 textbooks based on the user's query, ensuring they are highly relevant and of good quality. Follow these guidelines:  
@@ -115,8 +79,8 @@ app.get("/ping", function (req, res) {
 
 app.post("/show_body", function (req, res) {
   console.log("Get Request Received");
-  res.send(req.body);
-  res.send(req.body);
+  console.log(res.rawBody);
+  res.send("Done");
 });
 
 app.listen(port, () => {
