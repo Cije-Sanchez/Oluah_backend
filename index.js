@@ -115,6 +115,7 @@ app.get("/ping", function (req, res) {
 app.post("/show_body", function (req, res) {
   console.log("Get Request Received");
   res.send(req.body);
+  res.send(req.body);
 });
 
 app.listen(port, () => {
