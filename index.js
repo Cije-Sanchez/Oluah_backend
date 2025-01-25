@@ -2,7 +2,18 @@ const express = require("express");
 const app = express();
 const port = process.env.PORT || 3000;
 const cors = require("cors");
-app.use(express.json());
+app.use(
+  express.json({
+    verify: (req, res, buf) => {
+      req.rawBody = buf.toString(); // Save the raw body for debugging
+    },
+  }),
+);
+
+app.use((req, res, next) => {
+  console.log("Raw Body:", req.rawBody); // Log the raw body
+  next();
+});
 app.use(cors());
 const { Pool } = require("pg");
 
