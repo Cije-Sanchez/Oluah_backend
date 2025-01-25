@@ -2,23 +2,7 @@ const express = require("express");
 const app = express();
 const port = process.env.PORT || 3000;
 const cors = require("cors");
-app.use((req, res, next) => {
-  let rawBody = "";
-
-  req.on("data", (chunk) => {
-    rawBody += chunk;
-  });
-
-  req.on("end", () => {
-    req.rawBody = rawBody; // Attach raw body to the request object
-    next();
-  });
-
-  req.on("error", (err) => {
-    console.error("Error reading raw body:", err);
-    res.status(500).send("Error reading body");
-  });
-});
+app.use(express.json());
 
 app.use(cors());
 const { Pool } = require("pg");
@@ -79,7 +63,7 @@ app.get("/ping", function (req, res) {
 
 app.post("/show_body", function (req, res) {
   console.log("Get Request Received");
-  console.log(req.rawBody);
+  console.log(req.body);
   res.send("Done");
 });
 
