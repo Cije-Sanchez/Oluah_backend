@@ -79,7 +79,7 @@ app.get("/ping", function (req, res) {
 
 app.post("/show_body", function (req, res) {
   console.log("Get Request Received");
-  console.log(res.rawBody);
+  console.log(req.rawBody);
   res.send("Done");
 });
 
